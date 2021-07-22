@@ -1,5 +1,9 @@
 import React, { useState, useCallback, useRef } from "react"
 import useParkingSearch from "./useParkingSearch"
+import { Container } from 'react-bootstrap'
+import Business from "./components/Business"
+import SearchBar from "./components/SearchBar"
+import Spinner from 'react-bootstrap/Spinner'
 
 
 export default function App() {
@@ -27,18 +31,22 @@ export default function App() {
   }
 
   return (
-    <React.Fragment>
+    <Container className="my-4">
+      <h1 className="mb-4">Parking Lot Search</h1>
+      {/* <SearchBar location={location} handleSearch={handleSearch} /> */}
       <input type="text" value={location} onChange={handleSearch}></input>
       {parking.map((parkingItem, index) => {
         if (parking.length === index + 1) {
-          return <div ref={lastParkingRef} key={parkingItem}>{parkingItem}</div>
+          // return <div ref={lastParkingRef} key={parkingItem}>{parkingItem}</div>
+          return <div ref={lastParkingRef} key={parkingItem.id}><Business business={parkingItem}/></div>
         } else {
-          return <div key={parkingItem}>{parkingItem}</div>
+          // return <div key={parkingItem}>{parkingItem}</div>
+          return <div key={parkingItem.id}><Business business={parkingItem}/></div>
         }
       })}
-      <div>{loading && 'Loading...'}</div>
+      <div>{loading && <Spinner animation="border" variant="primary"/>}</div>
       <div>{error && 'Error'}</div>
-    </React.Fragment>
+    </Container>
   );
 }
 
