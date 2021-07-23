@@ -1,53 +1,47 @@
-import React, { useState, useCallback, useRef } from "react"
-import useParkingSearch from "./useParkingSearch"
-import { Container } from 'react-bootstrap'
+import React, { useState } from "react"
+import useGetParking from "./useGetParking"
+import { Container } from "react-bootstrap"
 import Business from "./components/Business"
 import SearchBar from "./components/SearchBar"
+import BusinessPagination from "./components/BusinessPagination"
 import Spinner from 'react-bootstrap/Spinner'
 
 
 export default function App() {
-
-  const [location, setLocation] = useState('Santa Barbara')
+  const [location, setLocation] = useState("Santa Barbara");
   const [pageNumber, setPageNumber] = useState(1)
+  const [searchValue, setSearchValue] = useState(location)
 
-  const { parking, loading, hasMore, error } = useParkingSearch(location, pageNumber)
+  const { parking, loading, error, hasNextPage, excess, noResults } = useGetParking(location, pageNumber)
 
-  const observer = useRef()
-  const lastParkingRef = useCallback(node => {
-    if (loading) return
-    if (observer.current) observer.current.disconnect()
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPageNumber(prevPageNumber => prevPageNumber + 1)
-      }
-    })
-    if (node) observer.current.observe(node)
-  }, [loading, hasMore])
+  const handleSearchValue = (e) => {
+    const searchValue = e.target.value
+    setSearchValue(searchValue)
+  }
 
-  const handleSearch = (e) => {
-    setLocation(e.target.value)
+  const onSubmit = (e) => {
+    e.preventDefault()
     setPageNumber(1)
+    setLocation(searchValue)
   }
 
   return (
-    <Container className="my-4">
+    <Container className="my-4" >
       <h1 className="mb-4">Parking Lot Search</h1>
-      {/* <SearchBar location={location} handleSearch={handleSearch} /> */}
-      <input type="text" value={location} onChange={handleSearch}></input>
-      {parking.map((parkingItem, index) => {
-        if (parking.length === index + 1) {
-          // return <div ref={lastParkingRef} key={parkingItem}>{parkingItem}</div>
-          return <div ref={lastParkingRef} key={parkingItem.id}><Business business={parkingItem}/></div>
-        } else {
-          // return <div key={parkingItem}>{parkingItem}</div>
-          return <div key={parkingItem.id}><Business business={parkingItem}/></div>
-        }
+      <SearchBar handleSearchValue={handleSearchValue}  handleSearch={onSubmit} loading={loading} location={searchValue}/>
+      {(!excess && !loading && !error ) && <BusinessPagination pageNumber={pageNumber} setPageNumber={setPageNumber} hasNextPage={hasNextPage}/>}
+      
+      {loading && <Spinner animation="border" variant="primary" />}
+      {/* {(error.status && error.status === 400) && <h2>Try searching for something a bit less weird.</h2>} */}
+      {(error === "Request failed with status code 400") && <h2>Try searching for something a bit less weird.</h2>}
+      {(error === true && error !== "Request failed with status code 400") && <h2>Something went wrong.</h2>}
+      {excess && <h2>Too many results. Try narrowing your search.</h2>}
+      {noResults && <h2>No results found.</h2>}
+      {parking.map(business => {
+        return <Business key={business.id} business={business} />
       })}
-      <div>{loading && <Spinner animation="border" variant="primary"/>}</div>
-      <div>{error && 'Error'}</div>
+      {(!excess && !loading && !error) && <BusinessPagination pageNumber={pageNumber} setPageNumber={setPageNumber} hasNextPage={hasNextPage}/>}
     </Container>
-  );
+  )
+
 }
-
-
