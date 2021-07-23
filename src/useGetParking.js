@@ -12,7 +12,7 @@ const ACTIONS = {
   NO_RESULTS: "NO_RESULTS"
 }
 
-const URL = "http://localhost:3001/api/search"
+const URL = "https://parking-api.onrender.com/api/search"
 
 function reducer(state, action) {
 
