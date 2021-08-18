@@ -12,7 +12,9 @@ const ACTIONS = {
   NO_RESULTS: "NO_RESULTS"
 }
 
-const URL = "https://parking-api.onrender.com/api/search"
+//const URL = "https://parking-api.onrender.com/api/search"
+//const URL = "https://airgarage-api.herokuapp.com/api/search"
+const URL = process.env.REACT_APP_API
 
 function reducer(state, action) {
 
@@ -22,7 +24,7 @@ function reducer(state, action) {
       return { parking: [], loading: true }
 
     case ACTIONS.PARKING_LIST_SUCCESS:
-      return { ...state, loading: false, excess: false, noResults:false, parking: action.payload.parking }
+      return { ...state, loading: false, excess: false, noResults:false, parking: action.payload.parking, total: action.payload.total }
 
     case ACTIONS.PARKING_LIST_FAIL:
       return { ...state, loading: false, error: action.payload.error, parking: [] }
@@ -60,7 +62,7 @@ export default function useGetParking(location, pageNumber) {
           params: { location: location },
           cancelToken: cancelToken2.token,
         })
-        console.log("///// DATA.TOTAL: ", response.data.data)
+        //console.log("///// DATA.TOTAL: ", response.data.data)
         let count = response.data.data
         total.current = count
 
@@ -85,17 +87,16 @@ export default function useGetParking(location, pageNumber) {
         } else if (startIndex === 1) {
           nextPage = false;
         }
-        console.log("/////START INDEX: ", startIndex)
+        //console.log("/////START INDEX: ", startIndex)
   
-        const allBusinesses = [...response2.data.data]
-        console.log("////// ALL BUSINESSES: ", allBusinesses)
+        //console.log("////// ALL BUSINESSES: ", allBusinesses)
   
-        dispatch({ type: ACTIONS.PARKING_LIST_SUCCESS, payload: {parking: response2.data.data } })
+        dispatch({ type: ACTIONS.PARKING_LIST_SUCCESS, payload: {parking: response2.data.data, total: count } })
         dispatch({ type: ACTIONS.UPDATE_HAS_NEXT_PAGE, payload: { hasNextPage: nextPage } })
   
       } catch (error) {
         if (axios.isCancel(error)) return
-        console.log("/////////// ERROR IN HOOK:", error.message)
+        //console.log("/////////// ERROR IN HOOK:", error.message)
         dispatch({ type: ACTIONS.PARKING_LIST_FAIL, payload: { error: error.message } })
       }
     }
